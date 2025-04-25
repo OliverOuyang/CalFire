@@ -11,4 +11,12 @@ jinja2==3.1.2
 aiofiles==23.2.1
 wheel
 setuptools
-shapely==2.0.1 --only-binary=:all: 
+numpy
+# Use pre-compiled binaries for geo packages
+shapely==2.0.1 --only-binary=shapely
+pyproj==3.6.1 --only-binary=pyproj
+fiona==1.9.5 --only-binary=fiona
+geopandas==0.14.1
+matplotlib==3.8.0
+pyarrow==14.0.1
+xgboost==2.0.0 
