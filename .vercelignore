@@ -1,0 +1,9 @@
+*.geojson
+FireGeoData/
+__pycache__/
+logs/
+*.pyc
+.env
+venv/
+.git/
+.gitignore 

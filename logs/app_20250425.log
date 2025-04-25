@@ -1,0 +1,21 @@
+2025-04-25 11:48:12,165 - fire_prediction - INFO - Environment variables loaded from .env file
+2025-04-25 11:48:13,674 - fire_prediction - INFO - OpenAI client initialized successfully
+2025-04-25 11:48:13,674 - fire_prediction - INFO - Found model at: Prediction Model/fire_prediction_model.pkl
+2025-04-25 11:48:14,618 - fire_prediction - INFO - Successfully loaded prediction model
+2025-04-25 11:48:14,618 - fire_prediction - INFO - FastAPI application initialized
+2025-04-25 11:48:14,646 - fire_prediction - INFO - Starting Uvicorn server
+2025-04-25 11:48:15,490 - fire_prediction - INFO - Environment variables loaded from .env file
+2025-04-25 11:48:16,596 - fire_prediction - INFO - OpenAI client initialized successfully
+2025-04-25 11:48:16,596 - fire_prediction - INFO - Found model at: Prediction Model/fire_prediction_model.pkl
+2025-04-25 11:48:17,155 - fire_prediction - INFO - Successfully loaded prediction model
+2025-04-25 11:48:17,156 - fire_prediction - INFO - FastAPI application initialized
+2025-04-25 11:48:17,203 - fire_prediction - INFO - Environment variables loaded from .env file
+2025-04-25 11:48:17,203 - fire_prediction - INFO - Environment variables loaded from .env file
+2025-04-25 11:48:18,007 - fire_prediction - INFO - OpenAI client initialized successfully
+2025-04-25 11:48:18,007 - fire_prediction - INFO - OpenAI client initialized successfully
+2025-04-25 11:48:18,007 - fire_prediction - INFO - Found model at: Prediction Model/fire_prediction_model.pkl
+2025-04-25 11:48:18,007 - fire_prediction - INFO - Found model at: Prediction Model/fire_prediction_model.pkl
+2025-04-25 11:48:18,017 - fire_prediction - INFO - Successfully loaded prediction model
+2025-04-25 11:48:18,017 - fire_prediction - INFO - Successfully loaded prediction model
+2025-04-25 11:48:18,017 - fire_prediction - INFO - FastAPI application initialized
+2025-04-25 11:48:18,017 - fire_prediction - INFO - FastAPI application initialized
