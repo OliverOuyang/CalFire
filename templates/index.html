@@ -27,7 +27,7 @@
                 <div class="section">
                     <h3 class="section-title">
                         <i class="bi bi-satellite"></i>
-                        Satellite Image Analysis with GPT
+                        Satellite Image Analysis
                     </h3>
                     <div class="container mt-3 mb-3">
                         <div class="row">
@@ -39,8 +39,11 @@
                                         <p>Drag & drop or click to select</p>
                                         <input type="file" id="satellite-upload" class="file-input" accept="image/*">
                                     </div>
-                                    <div class="file-preview-container" id="satellite-preview-container" style="max-height: 200px; overflow: hidden;">
-                                        <img id="satellite-preview" class="img-fluid rounded" style="max-height: 200px; object-fit: contain;">
+                                    <div class="file-preview-container d-none" id="satellite-preview-container">
+                                        <div class="position-relative">
+                                            <img id="satellite-preview" class="img-fluid rounded" style="max-height: 200px; width: 100%; object-fit: contain;">
+                                            <button type="button" id="delete-satellite-image" class="btn-close position-absolute top-0 end-0 bg-secondary opacity-75 m-2" aria-label="Delete image"></button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -48,10 +51,14 @@
                             <div class="col-md-12 mb-3">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <button class="btn btn-primary w-100" id="upload-satellite"><i class="bi bi-cloud-arrow-up"></i> Upload</button>
+                                        <button class="btn btn-primary w-100" id="upload-satellite">
+                                            <i class="bi bi-cloud-arrow-up me-1"></i> Upload Image
+                                        </button>
                                     </div>
                                     <div class="col-md-6">
-                                        <button class="btn btn-success w-100" id="analyze-satellite" disabled><i class="bi bi-search"></i> Analyze</button>
+                                        <button class="btn btn-success w-100" id="analyze-satellite" disabled>
+                                            <i class="bi bi-search me-1"></i> Analyze Image
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -59,7 +66,9 @@
                             <div class="col-md-12">
                                 <div class="card shadow-sm">
                                     <div class="card-body">
-                                        <h4 class="card-title mb-3"><i class="bi bi-bar-chart-fill"></i> Analysis Results</h4>
+                                        <h4 class="card-title mb-3">
+                                            <i class="bi bi-bar-chart-fill me-2"></i> Analysis Results
+                                        </h4>
                                         
                                         <div id="satellite-loading" class="text-center d-none">
                                             <div class="spinner-border text-primary" role="status">
@@ -68,34 +77,36 @@
                                             <p class="mt-2">Analyzing satellite imagery...</p>
                                         </div>
                                         
-                                        <div id="satellite-results" class="d-none analysis-result-container">
-                                            <!-- Fire Detection Status Card - Simplified -->
+                                        <div id="satellite-results" class="d-none">
+                                            <!-- Fire Risk Category -->
                                             <div class="analysis-card mb-3">
-                                                <div class="analysis-card-header">
-                                                    <i class="bi bi-exclamation-triangle"></i> Fire Detection
+                                                <div class="analysis-card-header d-flex align-items-center">
+                                                    <i class="bi bi-exclamation-triangle me-2"></i> 
+                                                    <span>Fire Risk Category</span>
                                                 </div>
-                                                <div class="text-center py-2">
+                                                <div class="text-center py-3">
                                                     <div id="fire-detection-status">
-                                                        <h4 class="detection-text">NO FIRE DETECTED</h4>
+                                                        <h3 class="detection-text">WAITING FOR RESULT...</h3>
                                                     </div>
                                                 </div>
                                             </div>
                                             
-                                            <!-- Key Observations Card -->
+                                            <!-- Confidence Level -->
                                             <div class="analysis-card mb-3">
-                                                <div class="analysis-card-header">
-                                                    <i class="bi bi-exclamation-circle"></i> Key Observations
+                                                <div class="analysis-card-header d-flex align-items-center">
+                                                    <i class="bi bi-graph-up me-2"></i> 
+                                                    <span>Confidence Level</span>
                                                 </div>
-                                                <ul class="analysis-list ps-1 mb-1" id="observations-list" style="list-style-type: none;">
-                                                    <!-- Location will always be first -->
-                                                    <!-- Analysis points will be in the middle -->
-                                                    <!-- Conclusion will always be last -->
-                                                </ul>
+                                                <div class="text-center py-2">
+                                                    <h4 id="confidence-value">Calculating...</h4>
+                                                </div>
                                             </div>
                                             
-                                            <button class="btn btn-outline-primary btn-sm w-100" id="export-analysis">
-                                                <i class="bi bi-download"></i> Export Analysis Report
-                                            </button>
+                                            <!-- Notes -->
+                                            <div class="alert alert-info" role="alert">
+                                                <i class="bi bi-info-circle me-2"></i>
+                                                <small>Our model analyzes satellite imagery to identify potential fire risks based on vegetation, terrain, and other environmental factors.</small>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -361,8 +372,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <!-- Load satellite.js before other scripts to ensure event listeners are properly registered -->
-    <script src="{{ url_for('static', path='/js/satellite.js') }}"></script>
-    <script src="{{ url_for('static', path='/js/map.js') }}"></script>
-    <script src="{{ url_for('static', path='/js/prediction.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/satellite.js') }}?v={{ range(10000) | random }}"></script>
+    <script src="{{ url_for('static', path='/js/map.js') }}?v={{ range(10000) | random }}"></script>
+    <script src="{{ url_for('static', path='/js/prediction.js') }}?v={{ range(10000) | random }}"></script>
 </body>
 </html> 

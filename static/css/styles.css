@@ -744,4 +744,146 @@ body {
 /* Hide remove file button */
 .remove-file {
     display: none !important;
+}
+
+/* Satellite Image Analysis Section Styles */
+.file-upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+}
+
+.file-upload-area:hover {
+    border-color: #6c757d;
+    background-color: #f1f3f5;
+}
+
+.file-upload-area.dragover {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+.file-upload-area .upload-icon {
+    font-size: 2.5rem;
+    color: #6c757d;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.file-upload-area h4 {
+    margin-bottom: 10px;
+    color: #495057;
+}
+
+.file-upload-area p {
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+.file-input {
+    display: none;
+}
+
+.file-preview-container {
+    margin-top: 15px;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#satellite-results {
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Risk Category Styles */
+.text-success {
+    color: #28a745 !important;
+}
+
+.text-warning {
+    color: #ffc107 !important;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.text-secondary {
+    color: #6c757d !important;
+}
+
+.detection-text {
+    font-size: 1.8rem;
+    letter-spacing: 1px;
+    transition: color 0.3s ease;
+}
+
+#confidence-value {
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+/* Analysis Card Styles */
+.analysis-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.analysis-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.analysis-card-header {
+    padding: 12px 15px;
+    background-color: #f8f9fa;
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #495057;
+}
+
+/* Loading Animation */
+#satellite-loading {
+    padding: 30px 0;
+}
+
+.spinner-border {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Satellite image preview styles and delete button */
+.file-preview-container {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.file-preview-container .btn-close {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: rgba(108, 117, 125, 0.8);
+    color: white;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.file-preview-container .btn-close:hover {
+    background-color: rgba(108, 117, 125, 1);
+    transform: scale(1.1);
 } 

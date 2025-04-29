@@ -16,6 +16,8 @@ import pandas as pd
 from dotenv import load_dotenv
 import base64
 import re
+import httpx
+import io
 
 # Set up logging
 logs_dir = "logs"
@@ -92,13 +94,13 @@ selected_features = [
 app = FastAPI()
 logger.info("FastAPI application initialized")
 
-# Add CORS middleware
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # 允许所有来源
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # 允许所有方法
+    allow_headers=["*"],  # 允许所有头
 )
 
 # Mount static files
@@ -483,261 +485,95 @@ async def get_ecoregion_geojson():
 
 @app.post("/api/satellite/upload")
 async def upload_satellite_image(file: UploadFile = File(...)):
-    """
-    Upload satellite image file
+    """Upload satellite image file"""
+    logger.info(f"Satellite image upload request received")
     
-    Args:
-        file: Uploaded satellite image file
-        
-    Returns:
-        JSON response containing file ID and upload status
-    """
-    logger.info(f"Processing satellite image upload request, content type: {file.content_type if file else 'No file'}")
-    
-    # Verify request contains a file
     if not file:
-        logger.error("No file provided in request")
         raise HTTPException(status_code=400, detail="No file provided")
     
     try:
-        # Log detailed file information
-        logger.debug(f"File details - Filename: {file.filename}, Size: {file.size if hasattr(file, 'size') else 'unknown'}")
-        
         # Validate file type
         if not file.content_type.startswith('image/'):
-            logger.error(f"Invalid file type: {file.content_type}")
             raise HTTPException(status_code=400, detail="Only image files are accepted")
             
         # Generate unique file ID
         file_id = str(uuid.uuid4())
-        logger.debug(f"Generated file ID: {file_id}")
         
-        # Create upload directory if it doesn't exist
+        # Create upload directory
         upload_dir = "static/uploads/satellite"
         os.makedirs(upload_dir, exist_ok=True)
         
         # Save file
         file_path = os.path.join(upload_dir, f"{file_id}.jpg")
-        logger.debug(f"Saving file to: {file_path}")
-        
         content = await file.read()
-        logger.debug(f"Read {len(content)} bytes from uploaded file")
         
         with open(file_path, "wb") as buffer:
             buffer.write(content)
             
-        logger.info(f"Satellite image uploaded successfully, file ID: {file_id}, size: {len(content)} bytes")
+        logger.info(f"Satellite image uploaded successfully, file ID: {file_id}")
         
-        response_data = {
+        return {
             "status": "success",
             "file_id": file_id,
-            "message": "File uploaded successfully",
-            "file_size": len(content)
+            "message": "File uploaded successfully"
         }
         
-        logger.debug(f"Returning response: {response_data}")
-        return response_data
-        
     except Exception as e:
-        error_msg = f"Error uploading satellite image: {str(e)}"
-        logger.error(error_msg)
-        logger.exception(e)  # Log complete exception stack trace
-        raise HTTPException(status_code=500, detail=error_msg)
+        logger.error(f"Error uploading satellite image: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error uploading image: {str(e)}")
 
 @app.post("/api/satellite/analyze")
-async def analyze_satellite_image(file_id: str = Form(...)):
-    """
-    Analyze uploaded satellite image using GPT with improved structured results
-    
-    Args:
-        file_id: File ID returned from upload
-    
-    Returns:
-        JSON containing structured GPT analysis results
-    """
+async def analyze_satellite_image(file_id: str = Form(...), location: str = Form(None)):
+    """Analyze uploaded satellite image for fire risk"""
     logger.info(f"Satellite image analysis request received, file ID: {file_id}")
+    print(f"Starting analysis for file_id: {file_id}")
     
     try:
         # Get the image file path
         file_path = os.path.join("static/uploads/satellite", f"{file_id}.jpg")
         if not os.path.exists(file_path):
-            logger.error(f"Image file not found at {file_path}")
+            logger.error(f"Image file not found: {file_path}")
+            print(f"Error: Image file not found at {file_path}")
             raise HTTPException(status_code=404, detail="Image file not found")
+        
+        print(f"Image file found at: {file_path}")
             
         # Read the image file
         with open(file_path, "rb") as image_file:
-            image_data = image_file.read()
+            image_content = image_file.read()
         
-        logger.debug(f"Successfully read image file, size: {len(image_data)} bytes")
+        try:
+            # Import the prediction function from SatelliteImageAPI
+            from Satellite_pic_predict.SatelliteImageAPI import predict_image_from_bytes
             
-        # Get GPT analysis
-        if not openai_available:
-            logger.error("OpenAI service not available for analysis")
-            raise HTTPException(status_code=503, detail="OpenAI service not available")
+            # Call the prediction function directly with image content
+            prediction = await predict_image_from_bytes(image_content)
             
-        # Create prompt with specific instructions for structured analysis
-        prompt = """
-        Analyze this satellite image for wildfire risks and provide a structured response with exactly the following components:
-        
-        1. Location: Identify the likely location shown in the image. If uncertain, provide your best estimate of the type of terrain and region.
-        
-        2. Analysis Angles: Provide exactly 3 key observations from different angles:
-           - Smoke: Analyze visible smoke patterns, density, and direction
-           - Heat zones: Identify areas of active burning and fire intensity
-           - Vegetation: Assess vegetation health, fuel availability, and burn patterns
-        
-        3. Conclusion: Provide a brief conclusion stating clearly whether there is a FIRE DETECTED or NO FIRE DETECTED in the image.
-        
-        Keep each point concise (25 words or less). Do not use markdown formatting.
-        
-        Important: Your analysis should clearly state whether the image shows an active fire or not.
-        """
-        
-        logger.debug("Sending analysis request to GPT-4o-mini")
-        response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are an expert in satellite imagery analysis for fire detection. Provide structured analysis with exactly the requested components: Location, 3 Analysis Angles (Smoke, Heat zones, Vegetation), and Conclusion. Be concise and clear. Make a definitive statement whether a fire is detected or not detected."
-                },
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64.b64encode(image_data).decode()}"
-                            }
-                        }
-                    ]
-                }
-            ],
-            max_tokens=500
-        )
-        
-        # Extract analysis from response
-        analysis = response.choices[0].message.content
-        logger.info("GPT analysis completed successfully")
-        logger.debug(f"Analysis content length: {len(analysis)} characters")
-        
-        # Process analysis to determine fire detection status
-        fire_detected = False
-        
-        # Extract structured observations
-        # Parse out location, analysis angles and conclusion using regex
-        location_match = re.search(r'Location:?\s*([^\n]+)', analysis, re.IGNORECASE)
-        location = location_match.group(1).strip() if location_match else "Unknown location"
-        
-        # Extract all analysis points and conclusion for fire detection logic
-        smoke_match = re.search(r'Smoke:?\s*([^\n]+)', analysis, re.IGNORECASE)
-        smoke_text = smoke_match.group(1).strip() if smoke_match else ""
-        
-        heat_match = re.search(r'Heat zones:?\s*([^\n]+)', analysis, re.IGNORECASE)
-        heat_text = heat_match.group(1).strip() if heat_match else ""
-        
-        vegetation_match = re.search(r'Vegetation:?\s*([^\n]+)', analysis, re.IGNORECASE)
-        vegetation_text = vegetation_match.group(1).strip() if vegetation_match else ""
-        
-        conclusion_match = re.search(r'Conclusion:?\s*([^\n]+)', analysis, re.IGNORECASE)
-        conclusion_text = conclusion_match.group(1).strip() if conclusion_match else ""
-        
-        # Check for fire indicators in each section
-        has_smoke = False
-        if smoke_text:
-            # Check if smoke text indicates presence of smoke
-            has_smoke = not any(term in smoke_text.lower() for term in ['no smoke', 'no visible smoke', 'absence of smoke'])
-        
-        has_heat = False
-        if heat_text:
-            # Check if heat zones text indicates active burning
-            has_heat = not any(term in heat_text.lower() for term in ['no active burning', 'no heat zones', 'no fire intensity'])
-        
-        has_vegetation_damage = False
-        if vegetation_text:
-            # Check if vegetation text indicates burned or damaged vegetation
-            has_vegetation_damage = any(term in vegetation_text.lower() for term in ['burn', 'scorch', 'damage', 'distress'])
-        
-        # Check explicit fire mention in conclusion
-        conclusion_indicates_fire = False
-        if conclusion_text:
-            conclusion_indicates_fire = any(term in conclusion_text.lower() for term in ['fire detected', 'active fire'])
-            # If conclusion explicitly mentions no fire, override other indicators
-            if any(term in conclusion_text.lower() for term in ['no fire detected', 'no active fire']):
-                conclusion_indicates_fire = False
-                has_heat = False
-                has_smoke = False
-        
-        # Determine fire detection based on indicators (heat zones and explicit conclusion are most reliable)
-        fire_detected = has_heat or conclusion_indicates_fire
-        
-        # If no direct indicators, use a combination of smoke and vegetation damage
-        if not fire_detected and has_smoke and has_vegetation_damage:
-            fire_detected = True
+            # Log the prediction result
+            print(f"Prediction result: {prediction}")
+            logger.info(f"Analysis completed. Predicted class: {prediction.predicted_class}, Confidence: {prediction.confidence}")
             
-        logger.debug(f"Fire detection indicators: smoke={has_smoke}, heat={has_heat}, vegetation={has_vegetation_damage}, conclusion={conclusion_indicates_fire}")
-        logger.debug(f"Final fire detection status: {fire_detected}")
-        
-        # Create observations list
-        observations = []
-        
-        # Add location as first observation
-        observations.append(f"Location: {location}")
-        
-        # Add smoke observation
-        if smoke_match:
-            observations.append(f"Smoke: {smoke_text}")
-        else:
-            observations.append("Smoke: No visible smoke patterns detected in the image.")
-            
-        # Add heat zones observation
-        if heat_match:
-            observations.append(f"Heat zones: {heat_text}")
-        else:
-            observations.append("Heat zones: No active burning or heat zones identified.")
-            
-        # Add vegetation observation
-        if vegetation_match:
-            observations.append(f"Vegetation: {vegetation_text}")
-        else:
-            observations.append("Vegetation: Vegetation appears normal with no signs of fire damage.")
-        
-        # Add conclusion
-        if conclusion_match:
-            observations.append(f"Conclusion: {conclusion_text}")
-        else:
-            # Add a default conclusion based on fire detection status
-            observations.append(f"Conclusion: {'Fire detected in satellite image.' if fire_detected else 'No fire detected in satellite image.'}")
-        
-        # Convert old probability to binary status (for backward compatibility)
-        probability = 100 if fire_detected else 0
-        
-        logger.debug(f"Extracted {len(observations)} structured observations")
-        logger.debug(f"Fire detection status: {'Detected' if fire_detected else 'Not Detected'}")
-        
-        # Return structured response
-        response_data = {
-            "status": "success",
-            "analysis": analysis,
-            "structured_data": {
-                "fire_probability": probability / 100,
-                "fire_detected": fire_detected,
-                "risk_level": "high" if fire_detected else "low",
-                "observations": observations,
-                "terrain_analysis": analysis,
-                "analysis_timestamp": datetime.now().isoformat()
+            # 将Pydantic模型转换为字典并返回
+            result = {
+                "predicted_class": prediction.predicted_class,
+                "confidence": prediction.confidence
             }
-        }
-        
-        logger.info(f"Analysis completed with fire detection status: {'Detected' if fire_detected else 'Not Detected'}")
-        return response_data
+            
+            # 打印结果，确保格式正确
+            print(f"Returning JSON result: {result}")
+            
+            # Return the prediction result
+            return result
+            
+        except Exception as model_error:
+            print(f"Model prediction error: {str(model_error)}")
+            logger.error(f"Model prediction error: {str(model_error)}")
+            raise HTTPException(status_code=500, detail=f"Error in model prediction: {str(model_error)}")
         
     except Exception as e:
-        error_msg = f"Error analyzing satellite image: {str(e)}"
-        logger.error(error_msg)
-        logger.exception(e)
-        raise HTTPException(status_code=500, detail=error_msg)
+        print(f"Error analyzing satellite image: {str(e)}")
+        logger.error(f"Error analyzing satellite image: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error analyzing image: {str(e)}")
 
 # Add test endpoint to verify API is working properly
 @app.get("/api/test")
