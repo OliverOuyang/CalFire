@@ -234,24 +234,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Populate ecoregion dropdown
     function populateEcoregionDropdown() {
-        const ecoregionSelect = document.getElementById('ecoregion-select');
-        
-        // Clear existing options
-        ecoregionSelect.innerHTML = '';
-        
-        // Add "All Ecoregions" option
-        const allOption = document.createElement('option');
-        allOption.value = 'all';
-        allOption.textContent = 'All Ecoregions';
-        ecoregionSelect.appendChild(allOption);
-        
-        // Add each ecoregion as an option
-        ecoregions.forEach(ecoregion => {
-            const option = document.createElement('option');
-            option.value = ecoregion;
-            option.textContent = ecoregion;
-            ecoregionSelect.appendChild(option);
-        });
+        // This function is no longer needed since the ecoregion dropdown was removed
+        // Keeping it as a stub to avoid errors elsewhere in the code
+        console.log("Ecoregion dropdown population skipped - dropdown removed from UI");
     }
     
     // Zoom to county
@@ -432,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ecoregionLayerGroup.clearLayers();
         
         // Get filter values
-        const selectedEcoregion = document.getElementById('ecoregion-select').value;
+        const selectedEcoregion = 'all'; // Always use 'all' since we removed the dropdown
         const displayType = document.getElementById('display-type').value;
         
         // Only show ecoregions on specific display types
@@ -624,10 +609,6 @@ document.addEventListener('DOMContentLoaded', function() {
             zoomToCounty(selectedCounty);
             // Update displayed data
             displayFireData();
-        });
-        
-        document.getElementById('ecoregion-select').addEventListener('change', () => {
-            displayEcoregionData();
         });
         
         document.getElementById('display-type').addEventListener('change', () => {

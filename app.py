@@ -457,7 +457,7 @@ async def get_fire_geojson():
         
 @app.get("/api/geojson/ecoregion")
 async def get_ecoregion_geojson():
-    """API endpoint that provides ecoregion GeoJSON data"""
+    """API endpoint that provides ecoregion GeoJSON data (used by map.js when ecoregion layers are enabled)"""
     logger.info("Ecoregion GeoJSON data requested")
     
     # Use optimized GeoJSON file
