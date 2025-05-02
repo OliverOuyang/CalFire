@@ -71,13 +71,17 @@ except ImportError:
 model = None
 model_path = "Prediction Model/fire_prediction_model.pkl"
 
+# 检测是否在 Vercel 环境中运行
+is_vercel = os.environ.get('VERCEL', False) or os.environ.get('VERCEL_ENV', False)
+
 try:
-    if os.path.exists(model_path):
+    if not is_vercel and os.path.exists(model_path):
         logger.info(f"Found model at: {model_path}")
         model = joblib.load(model_path)
         logger.info("Successfully loaded prediction model") 
     else:
-        logger.warning(f"Model not found at: {model_path}")
+        # 在 Vercel 环境中直接使用规则引擎
+        logger.warning(f"Model not found or running in Vercel environment")
         logger.info("Running in cloud-based prediction mode")
 except Exception as e:
     logger.error(f"Error loading model: {e}")

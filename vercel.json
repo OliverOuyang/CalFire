@@ -11,5 +11,5 @@
       "dest": "app.py"
     }
   ],
-  "installCommand": "pip install -r requirements-vercel.txt"
+  "installCommand": "pip install --no-deps -r requirements-vercel.txt"
 }

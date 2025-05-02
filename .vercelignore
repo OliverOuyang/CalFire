@@ -1,6 +1,13 @@
-*.geojson
+# 排除大型数据集和模型文件
+Prediction Model/
 FireGeoData/
 __pycache__/
+.git/
+logs/
+*.log
+venv/
+.env
+*.geojson
 *.py[cod]
 *$py.class
 *.so
@@ -30,5 +37,4 @@ models/
 test/
 temp/
 tmp/
-.git/
 .gitignore 

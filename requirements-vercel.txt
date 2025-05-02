@@ -4,12 +4,16 @@ uvicorn
 jinja2
 python-dotenv
 httpx
+python-multipart
 
-# 数据处理
+# 数据处理 - 使用兼容 Vercel 的版本
 numpy
-pandas==1.5.3 --only-binary=pandas
+pandas==1.5.3
 joblib
 pydantic
 
-# 其他依赖（根据你的实际需要调整）
-python-multipart
+# OpenAI API（如果使用）
+openai
+
+# 其他依赖
+Pillow
